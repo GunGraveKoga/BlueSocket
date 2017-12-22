@@ -22,9 +22,22 @@
 	import Darwin
 #elseif os(Linux)
 	import Glibc
+#elseif os(Windows)
+	#if CYGWIN
+		import NewLib
+	#else
+		import MinGWCrt
+	#endif
+	import CWin32
 #endif
 
 import Foundation
+
+#if os(Windows)
+fileprivate func MAKEWORD(_ a:UInt16, _ b:UInt16) ->UInt16 {
+	return UInt16(a | (b << 8))
+}
+#endif
 
 // MARK: Socket
 
