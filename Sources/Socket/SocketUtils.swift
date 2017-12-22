@@ -22,6 +22,13 @@
 	import Darwin
 #elseif os(Linux)
 	import Glibc
+#elseif os(Windows)
+	#if CYGWIN
+		import NewLib
+	#else
+		import MinGWCrt
+	#endif
+	import CWin32
 #endif
 
 import Foundation
@@ -351,6 +358,48 @@ extension Socket.Address {
 		}
 	}
 	
+#elseif os(Windows)
+	
+	public struct FD {
+		
+		public static func ZERO(set: inout fd_set) {
+			set.fd_count = 0
+		}
+
+		public static func SET(fd: SOCKET, set: inout fd_set) {
+
+			for (index, element) in set.fd_array {
+				if element == fd {
+					return
+				}
+			}
+
+			if set.fd_count < FD_SETSIZE {
+				set.fd_array[set.fd_count] = fd
+				set.fd_count += 1
+			}
+
+		}
+
+		public static func CLR(fd:SOCKET, set: inout fd_set) {
+			__i:Int = -1
+			for (index, element) in set.fd_array.enumirated() {
+				if fd == element {
+					__i = index
+					break
+				}
+			}
+
+			if __i >= 0 {
+				set.fd_array.remove(at:__i)
+			}
+		}
+
+		public static func ISSET(fd:SOCKET, set: inout fd_set) -> Bool {
+			return (__WSAFDIsSet(fd, set) != 0)
+		}
+	}
+
 #else
 	
 	public struct FD {
